@@ -3,48 +3,95 @@ const puntajes = [],
 	limite = 9,
 	players = [
 		{
+			id: 1,
 			nombre: '',
 			puntos: 0,
 			posicionActual: [],
 			celda: null
 		},
 		{
+			id: 2,
 			nombre: '',
 			puntos: 0,
 			posicionActual: [],
 			celda: null
 		}
-	];
+	],
+	objetivo = {
+		posicion: [],
+		celda: null
+	};
 
-document.addEventListener('keydown', mover);
+let id,
+	tiempo = 3;
+
+function cuentaAtras() {
+
+	if (tiempo === 0) {
+		tiempo = 3;
+		clearInterval(id);
+		temporizador.style.display = 'none';
+		inicarPosiciones();
+	}
+	
+	temporizador.textContent = tiempo--;
+
+}
+
+function reinicio(event) {
+
+	if (typeof event !== 'undefined') {
+
+		for (const [i, jugador] of players.entries()) {
+
+			puntajes[i].textContent = 0;
+			jugador['puntos'] = 0;
+			if (jugador['celda'] !== null)
+				jugador['celda'].classList.remove('jugador' + jugador['id']);
+
+		}
+
+		if (objetivo['celda'] !== null)
+			objetivo['celda'].classList.remove('objetivo');
+
+	}
+
+	document.removeEventListener('keydown', mover);
+	temporizador.style.display = 'flex';
+	id = setInterval(cuentaAtras, 1000);
+	
+}
 
 function inicarPosiciones() {
 
 	const posicionesOcupadas = [];
 
-	let contador = 1,
-		objetivo;
+	let contador = 0,
+		clase;
+
+	document.addEventListener('keydown', mover);
 
 	for (let jugador of players) {
 
-		jugador['nombre'] = 'jugador' + contador;
-
-		if (!puntajes[contador - 1].classList.contains(jugador['nombre']))
-			puntajes[contador - 1].classList.add(jugador['nombre']);
+		clase = 'jugador' + jugador['id'];
 
 		contador++;
 
-		if (jugador['celda'] !== null)
-			jugador['celda'].classList.remove(jugador['nombre']);
+		if (jugador['celda'] !== null) {
+			jugador['celda'].classList.remove(clase);
+			objetivo['celda'].classList.remove('objetivo');
+		}
+
 
 		jugador['posicionActual'] = (posicionSinRepetir(posicionesOcupadas));
 		jugador['celda'] = celdas[jugador['posicionActual'][0]][jugador['posicionActual'][1]];
-		jugador['celda'].classList.add(jugador['nombre']);
+		jugador['celda'].classList.add(clase);
 
 	}
 
-	objetivo = posicionSinRepetir(posicionesOcupadas);
-	celdas[objetivo[0]][objetivo[1]].classList.add('objetivo');
+	objetivo['posicion'] = posicionSinRepetir(posicionesOcupadas);
+	objetivo['celda'] = celdas[objetivo['posicion'][0]][objetivo['posicion'][1]];
+	objetivo['celda'].classList.add('objetivo');
 
 }
 
@@ -54,7 +101,8 @@ function mover(event) {
 		haciaLimite,
 		eje,
 		sobreLimite,
-		colisiona;
+		colisiona,
+		posicion;
 
 	switch (event['keyCode']) {
 		case 65:
@@ -110,27 +158,31 @@ function mover(event) {
 		typeof eje !== 'undefined' &&
 		typeof haciaLimite !== 'undefined') {
 
+		posicion = players[jugador]['posicionActual'];
+
 		sobreLimite = haciaLimite ?
-			++players[jugador]['posicionActual'][eje] >= celdas.length :
-			--players[jugador]['posicionActual'][eje] < 0;
+			++posicion[eje] >= celdas.length :
+			--posicion[eje] < 0;
 
 		if (sobreLimite)
-			players[jugador]['posicionActual'][eje] = haciaLimite ? 0 : celdas.length - 1;
+			posicion[eje] = haciaLimite ? 0 : celdas.length - 1;
 
 		colisiona = igualArrays(players[0]['posicionActual'], players[1]['posicionActual']);
 
 		if (colisiona) {
 
 			sobreLimite = haciaLimite ?
-				++players[jugador]['posicionActual'][eje] >= celdas.length :
-				--players[jugador]['posicionActual'][eje] < 0;
+				--posicion[eje] < 0 :
+				++posicion[eje] >= celdas.length;
 
 			if (sobreLimite)
-				players[jugador]['posicionActual'][eje] = haciaLimite ? 0 : celdas.length - 1;
+				posicion[eje] = haciaLimite ? celdas.length - 1 : 0;
+
+		} else {
+
+			players[jugador]['celda'] = actualizarCelda(players[jugador]);
 
 		}
-
-		players[jugador]['celda'] = actualizarCelda(players[jugador]);
 
 	}
 
@@ -153,21 +205,19 @@ function verificaGanador() {
 	} while (contador < players.length && !hayGanador);
 
 	if (hayGanador) {
-
 		puntajes[contador].textContent = ++players[contador]['puntos'];
-		players[contador]['celda'].classList.remove('objetivo');
-
-		inicarPosiciones();
-
+		reinicio();
 	}
 
 }
 
 function actualizarCelda(player) {
 
-	player['celda'].classList.toggle(player['nombre']);
+	let clase = 'jugador' + player['id'];
+
+	player['celda'].classList.toggle(clase);
 	player['celda'] = celdas[player['posicionActual'][0]][player['posicionActual'][1]];
-	player['celda'].classList.toggle(player['nombre']);
+	player['celda'].classList.toggle(clase);
 
 	return player['celda'];
 

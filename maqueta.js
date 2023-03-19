@@ -1,3 +1,4 @@
+const temporizador = document.createElement('div');
 
 document.addEventListener('DOMContentLoaded', maquetaPagina);
 
@@ -10,7 +11,6 @@ function maquetaPagina() {
 	let section,
 		clase;
 
-	// header.classList.add('contenedor');
 	header.innerHTML = '<h2>Juego de Sergio</h2>';
 	body.appendChild(header);
 
@@ -24,14 +24,23 @@ function maquetaPagina() {
 	}
 
 	body.appendChild(main);
+
+	temporizador.id = 'temporizador';
+	temporizador.textContent = tiempo--;
+
+	body.appendChild(temporizador);
+	
 	pintarPuntuacion();
 	pintarJuego();
+
+	id = setInterval(cuentaAtras, 1000);
 
 }
 
 function pintarPuntuacion() {
 
-	const puntuacion = document.getElementsByClassName('puntuacion')[0];
+	const puntuacion = document.getElementsByClassName('puntuacion')[0],
+		boton = document.createElement('button');
 
 	puntuacion.classList.add('contenedor');
 	puntuacion.style.flexDirection = 'column';
@@ -40,13 +49,19 @@ function pintarPuntuacion() {
 	for (let i = 0; i < 2; i++) {
 
 		puntajes.push(document.createElement('div'));
+		puntajes[i].style.backgroundColor = i === 0 ? 'orange' : 'blue';
 		puntajes[i].classList.add('contenedor');
 		puntajes[i].classList.add('puntaje');
 		puntajes[i].textContent = 0;
 		puntuacion.appendChild(puntajes[i]);
 		
 	}
-	
+
+	boton.id = 'boton';
+	boton.textContent = 'reiniciar';
+	boton.addEventListener('click', reinicio);
+	puntuacion.appendChild(boton);
+
 }
 
 function pintarJuego() {
@@ -74,6 +89,5 @@ function pintarJuego() {
 	}
 
 	juego.appendChild(tablero);
-	inicarPosiciones();
-
+	
 }
