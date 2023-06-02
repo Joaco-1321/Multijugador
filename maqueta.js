@@ -9,7 +9,7 @@ function maquetaPagina() {
 
   let section, clase;
 
-  header.innerHTML = "<h2>Juego de Sergio</h2>";
+  header.innerHTML = "<h2>Multijugador</h2>";
   body.appendChild(header);
 
   for (let i = 0; i < 2; i++) {
